@@ -1,32 +1,50 @@
 using System;
+using System.Collections.Generic;
+using TaskFlow.Models;
 using TaskFlow.Services;
 
-public class ConsoleHelper
+namespace TaskFlow.Utils
 {
-    public static void PromptCreateTask(TaskService taskService)
+    public class ConsoleHelper
     {
-        Console.WriteLine("\n--- CREAR NUEVA TAREA ---");
-
-        string title;
-        do
+        
+        public static void PromptCreateTask(TaskService taskService)
         {
-            Console.Write("Título (Obligatorio): ");
-            title = Console.ReadLine();
-        } while (string.IsNullOrWhiteSpace(title));
+            Console.WriteLine("\n--- CREAR NUEVA TAREA ---");
 
-        Console.Write("Descripción (Opcional): ");
-        string description = Console.ReadLine();
+            string title;
+            do
+            {
+                Console.Write("TÃ­tulo (Obligatorio): ");
+                title = Console.ReadLine();
+            } while (string.IsNullOrWhiteSpace(title));
 
-        Console.Write("Responsable: ");
-        string responsible = Console.ReadLine();
+            Console.Write("DescripciÃ³n (Opcional): ");
+            string description = Console.ReadLine();
 
-        try
-        {
-            taskService.CreateTask(title, description, responsible);
+            Console.Write("Responsable: ");
+            string responsible = Console.ReadLine();
+
+            try
+            {
+                taskService.CreateTask(title, description, responsible);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n[Error] {ex.Message}");
+            }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Error] {ex.Message}");
-        }
+
+        // 2. Conservamos LOS ESQUELETOS para el resto del equipo
+
+        public static void PromptListTasks(TaskService taskService) { }
+
+        public static void PrintTaskList(List<TaskItem> tasks) { }
+
+        public static void PromptUpdateStatus(TaskService taskService) { }
+
+        public static void PromptUpdateResponsible(TaskService taskService) { }
+
+        public static void PromptDeleteTask(TaskService taskService) { }
     }
 }
