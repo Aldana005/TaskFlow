@@ -43,8 +43,7 @@ namespace TaskFlow.Services
        
 
         // Listar tareas
-        public List<TaskItem> GetTasks(TaskStatus? filter = null) 
-        { 
+       
             public List<TaskItem> GetTasks(TaskStatus? filter = null)
 {
     // 1. Creamos una nueva lista vac�a para guardar los resultados
