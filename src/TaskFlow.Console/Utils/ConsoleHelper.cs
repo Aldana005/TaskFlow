@@ -1,3 +1,4 @@
+
 using TaskFlow.Services;
 
 namespace TaskFlow.Utils
@@ -34,9 +35,73 @@ namespace TaskFlow.Utils
 
         // 2. Conservamos LOS ESQUELETOS para el resto del equipo
 
-        public static void PromptListTasks(TaskService taskService) { }
+        public static void PromptListTasks(TaskService taskService) 
+        {
+          Console.WriteLine("\n--- FILTROS DE B�SQUEDA ---");
+    Console.WriteLine("1. Mostrar Todas");
+    Console.WriteLine("2. Solo Pendientes");
+    Console.WriteLine("3. Solo En Progreso");
+    Console.WriteLine("4. Solo Completadas");
+    Console.Write("Seleccione una opci�n (1-4): ");
 
-        public static void PrintTaskList(List<TaskItem> tasks) { }
+    string choice = Console.ReadLine();
+    List<TaskItem> result;
+
+    switch (choice)
+    {
+        case "2":
+            result = taskService.GetTasks(TaskStatus.Pendiente);
+            break;
+        case "3":
+            result = taskService.GetTasks(TaskStatus.EnProgreso);
+            break;
+        case "4":
+            result = taskService.GetTasks(TaskStatus.Completada);
+            break;
+        default:
+            // Cualquier otra opci�n (incluyendo el 1) muestra todas
+            result = taskService.GetTasks();
+            break;
+        }
+
+        public static void PrintTaskList(List<TaskItem> tasks)
+        {
+           if (tasks.Count == 0)
+
+    {
+
+        Console.WriteLine("\n[Info] No hay tareas que coincidan con la b�squeda.");
+
+        return;
+
+    }
+
+
+
+    Console.WriteLine("\n--- LISTADO DE TAREAS ---");
+
+    foreach (var task in tasks)
+
+    {
+
+        // Formateamos la fecha de actualizaci�n si existe, si no, mostramos "N/A"
+
+        string updatedDate = task.UpdatedAt.HasValue
+
+            ? task.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")
+
+            : "N/A";
+
+
+
+        Console.WriteLine($"ID: {task.Id} | T�tulo: {task.Title}");
+
+        Console.WriteLine($"Responsable: {task.Responsible} | Estado: {task.Status}");
+
+        Console.WriteLine($"Creada: {task.CreatedAt:dd/MM/yyyy HH:mm} | Modificada: {updatedDate}");
+
+        Console.WriteLine(new string('-', 40));
+        }
 
         public static void PromptUpdateStatus(TaskService taskService) 
         {
@@ -101,4 +166,5 @@ namespace TaskFlow.Utils
 
         public static void PromptDeleteTask(TaskService taskService) { }
     }
+
 }
