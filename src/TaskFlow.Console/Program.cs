@@ -18,7 +18,8 @@ class Program
             Console.WriteLine("1. Crear tarea");
             Console.WriteLine("2. Listar tareas");
             Console.WriteLine("3. Actualizar estado");
-            Console.WriteLine("4. Salir (Temporal para pruebas)");
+            Console.WriteLine("4. Cambiar Responsable");
+            Console.WriteLine("5. Eliminar tarea");
             Console.Write("Seleccione una opción: ");
 
             string option = Console.ReadLine();
@@ -26,14 +27,31 @@ class Program
             switch (option)
             {
                 case "1":
-                    // Llama a la funcionalidad del Integrante A
+                    // Llama a la funcionalidad de crear tarea
                     ConsoleHelper.PromptCreateTask(taskService);
                     break;
 
                 case "2":
-                    // Llama a la funcionalidad del Integrante B
+                    // Llama a la funcionalidad de listar
                     ConsoleHelper.PromptListTasks(taskService);
                     break;
+                
+                case "3":
+                    //Llama a al funcionalidad de actualizar estado
+                    ConsoleHelper.PromptUpdateStatus(taskService);
+                    break;
+
+                case "4":
+                    //Llama a al funcionalidad de actualizar responsable
+                    ConsoleHelper.PromptUpdateResponsible(taskService);
+                    break;
+
+                case "5":
+                    //Llama a al funcionalidad de eliminar tarea
+                    ConsoleHelper.PromptDeleteTask(taskService);
+                    break;
+
+
             }
         }
     }
