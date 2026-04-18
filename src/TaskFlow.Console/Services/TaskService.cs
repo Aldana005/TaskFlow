@@ -1,5 +1,7 @@
 
 using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json;
 
 namespace TaskFlow.Services
 {
@@ -8,7 +10,50 @@ namespace TaskFlow.Services
         
         private List<TaskItem> _tasks = new List<TaskItem>();
 
-        
+        // 1. Definimos la ruta del archivo Json
+        private readonly string _folderPath = "data";
+        private readonly string _filePath = "data/tasks.json";
+
+        // 2. Creamos el constructor que se ejecuta apenas arranca el programa
+        public TaskService()
+        {
+            LoadTasks(); // Intentamos cargar tareas previas al iniciar
+        }
+
+        // 3. Método para GUARDAR (Espejar la lista al JSON)
+        private void SaveTasks()
+        {
+            // Requerimiento: Si la carpeta no existe, se crea
+            if (!Directory.Exists(_folderPath))
+            {
+                Directory.CreateDirectory(_folderPath);
+            }
+
+            // Convertimos la lista a texto JSON 
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string jsonString = JsonSerializer.Serialize(_tasks, options);
+
+            // Sobreescribimos el archivo completo
+            File.WriteAllText(_filePath, jsonString);
+        }
+
+        // 4. Método para CARGAR (Del JSON a la lista)
+        private void LoadTasks()
+        {
+            // Si el archivo no existe, no hacemos nada (la lista queda vacía)
+            if (!File.Exists(_filePath)) return;
+
+            try
+            {
+                // Leemos el texto y lo convertimos a lista de C#
+                string jsonString = File.ReadAllText(_filePath);
+                _tasks = JsonSerializer.Deserialize<List<TaskItem>>(jsonString) ?? new List<TaskItem>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n[Error interno] No se pudo cargar el archivo JSON: {ex.Message}");
+            }
+        }
         public void CreateTask(string title, string description, string responsible)
         {
             // Validación: El título es obligatorio
@@ -39,6 +84,9 @@ namespace TaskFlow.Services
             };
 
             _tasks.Add(newTask);
+
+            //guardamos la lista actualizada en el Json
+            SaveTasks();
             Console.WriteLine($"\n[Éxito] Tarea '{title}' creada con el ID #{newId}.");
         }
 
@@ -100,6 +148,8 @@ namespace TaskFlow.Services
                 taskFound.Status = newStatus;
                 // Registramos la fecha exacta de la modificación
                 taskFound.UpdatedAt = DateTime.Now;
+                //guardamos cambios en el Json
+                SaveTasks();
 
                 return true; // Indicamos que la operación fue un éxito
             }
@@ -165,7 +215,9 @@ namespace TaskFlow.Services
             var task = GetTaskById(id);
             if (task != null)
             {
-                return _tasks.Remove(task);
+                _tasks.Remove(task);
+                SaveTasks();
+                return true;
             }
             return false;
         }
