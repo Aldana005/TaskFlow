@@ -1,4 +1,6 @@
 
+using System.Threading.Tasks;
+
 namespace TaskFlow.Services
 {
     public class TaskService
@@ -44,25 +46,25 @@ namespace TaskFlow.Services
 
         // Listar tareas
        
-            public List<TaskItem> GetTasks(TaskStatus? filter = null)
-{
-    // 1. Creamos una nueva lista vac�a para guardar los resultados
-    List<TaskItem> result = new List<TaskItem>();
+        public List<TaskItem> GetTasks(TaskStatus? filter = null)
+                {
+                // 1. Creamos una nueva lista vac�a para guardar los resultados
+                List<TaskItem> result = new List<TaskItem>();
 
-    // 2. Verificamos si el usuario envi� un filtro
-    if (filter.HasValue)
-    {
-        // Si hay filtro, recorremos todas las tareas una por una
-        foreach (TaskItem task in _tasks)
-        {
-            // Si el estado de la tarea coincide con el filtro que buscamos
-            if (task.Status == filter.Value)
-            {
-                //la agregamos a nuestra lista de resultados
-                result.Add(task);
+                // 2. Verificamos si el usuario envi� un filtro
+                if (filter.HasValue)
+                {
+                    // Si hay filtro, recorremos todas las tareas una por una
+                    foreach (TaskItem task in _tasks)
+                    {
+                        // Si el estado de la tarea coincide con el filtro que buscamos
+                        if (task.Status == filter.Value)
+                        {
+                            //la agregamos a nuestra lista de resultados
+                            result.Add(task);
+                        }
+                    }
             }
-        }
-    }
     else
     {
         // Si NO hay filtro, recorremos y agregamos absolutamente todas
@@ -121,15 +123,51 @@ namespace TaskFlow.Services
         }
 
         // Cambiar responsable
-        public bool UpdateTaskResponsible(int id, string newResponsible) 
-        { 
-            return false; 
+        public bool UpdateTaskResponsible(int id, string newResponsible)
+        {
+            // 1. Buscamos la tarea por su ID 
+            TaskItem taskFound = null;
+            foreach (TaskItem task in _tasks)
+            {
+                if (task.Id == id)
+                {
+                    taskFound = task;
+                    break;
+                }
+            }
+
+            // 2. Si la encontramos, actualizamos el responsable
+            if (taskFound != null)
+            {
+                taskFound.Responsible = newResponsible;
+                taskFound.UpdatedAt = DateTime.Now; // Dejamos registro de que se modificó
+                return true; // Operación exitosa
+            }
+
+            return false; // No se encontró el ID
+        }
+        // Método nuevo para buscar y devolver la tarea completa
+        public TaskItem GetTaskById(int id)
+        {
+            foreach (var task in _tasks) 
+                {
+                    if (task.Id == id) 
+                    {
+                        return task;
+                    }
+            }
+            return null;
         }
 
         // Borrar tarea
         public bool DeleteTask(int id) 
-        { 
-            return false; 
+        {
+            var task = GetTaskById(id);
+            if (task != null)
+            {
+                return _tasks.Remove(task);
+            }
+            return false;
         }
     }
 }

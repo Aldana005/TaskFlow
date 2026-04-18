@@ -33,8 +33,6 @@ namespace TaskFlow.Utils
             }
         }
 
-        // 2. Conservamos LOS ESQUELETOS para el resto del equipo
-
         public static void PromptListTasks(TaskService taskService)
         {
             Console.WriteLine("\n--- FILTROS DE B�SQUEDA ---");
@@ -151,9 +149,80 @@ namespace TaskFlow.Utils
 
         }
 
-        public static void PromptUpdateResponsible(TaskService taskService) { }
+        public static void PromptUpdateResponsible(TaskService taskService) 
+        {
+            Console.WriteLine("\n--- ACTUALIZAR RESPONSABLE DE TAREA ---");
+            Console.Write("Ingrese el ID de la tarea a modificar: ");
 
-        public static void PromptDeleteTask(TaskService taskService) { }
+            string inputId = Console.ReadLine();
+
+            // Verificamos que sea un ID válido
+            if (int.TryParse(inputId, out int id))
+            {
+                Console.Write("Ingrese el nombre del nuevo responsable: ");
+                string newResponsible = Console.ReadLine();
+
+                // Pequeña validación para que no pongan un responsable vacío
+                if (string.IsNullOrWhiteSpace(newResponsible))
+                {
+                    Console.WriteLine("\n[Error] El nombre del responsable no puede estar vacío.");
+                    return;
+                }
+
+                // Llamamos al servicio
+                bool success = taskService.UpdateTaskResponsible(id, newResponsible);
+
+                if (success)
+                {
+                    Console.WriteLine($"\n[Éxito] El responsable de la tarea #{id} fue actualizado a '{newResponsible}'.");
+                }
+                else
+                {
+                    Console.WriteLine($"\n[Error] No se encontró ninguna tarea con el ID #{id}.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("\n[Error] Debe ingresar un número de ID válido.");
+            }   
+        }
+
+        public static void PromptDeleteTask(TaskService taskService) 
+        {
+            Console.WriteLine("\n--- ELIMINAR TAREA ---");
+            Console.Write("Ingrese el ID de la tarea a eliminar: ");
+
+            if (int.TryParse(Console.ReadLine(), out int id)) 
+    {
+                // Usamos la nueva función del servicio
+                var task = taskService.GetTaskById(id);
+
+                if (task != null)
+                {
+                    // Reutilizamos tu función de imprimir lista pasando solo esta tarea 
+                    PrintTaskList(new List<TaskItem> { task });
+
+                    Console.Write("\n¿Está seguro de que desea eliminar esta tarea? (s/n): ");
+                    if (Console.ReadLine().ToLower() == "s")
+                    {
+                        taskService.DeleteTask(id);
+                        Console.WriteLine("\n[Éxito] Tarea eliminada correctamente.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("\n[Info] Operación cancelada.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"\n[Error] No se encontró la tarea con ID #{id}.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("\n[Error] Entrada no válida.");
+            }
+        }
     }
 
 }
