@@ -8,16 +8,18 @@ namespace TaskFlow.Services
     public class TaskService
     {
         
+
         private List<TaskItem> _tasks = new List<TaskItem>();
 
-        // 1. Definimos la ruta del archivo Json
-        private readonly string _folderPath = "data";
-        private readonly string _filePath = "data/tasks.json";
+        private readonly string _folderPath;
+        private readonly string _filePath;
 
-        // 2. Creamos el constructor que se ejecuta apenas arranca el programa
-        public TaskService()
+        // Modificamos el constructor para recibir parámetros opcionales
+        public TaskService(string customFolder = "data", string customFile = "data/tasks.json")
         {
-            LoadTasks(); // Intentamos cargar tareas previas al iniciar
+            _folderPath = customFolder;
+            _filePath = customFile;
+            LoadTasks();
         }
 
         // 3. Método para GUARDAR (Espejar la lista al JSON)
