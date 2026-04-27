@@ -1,28 +1,21 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-<<<<<<< HEAD
 using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using TaskFlow.Services;
-using TaskFlow.Utils;
 using System.Collections.Generic;
-=======
-using TaskFlow.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using TaskFlow.Services;
->>>>>>> 192dfe93886e7660d0fbb0c6c3b839b1c6f05943
+using TaskFlow.Utils;
 
 namespace TaskFlow.Utils.Tests
 {
     [TestClass()]
     public class ConsoleHelperTests
     {
-<<<<<<< HEAD
+        // ==========================================
+        // HELPERS DEL EQUIPO A (Archivos Temporales)
+        // ==========================================
         private string CreateTempFolder(out string filePath)
         {
             var tempFolder = Path.Combine(Path.GetTempPath(), "TaskFlowTests", Guid.NewGuid().ToString());
@@ -41,31 +34,37 @@ namespace TaskFlow.Utils.Tests
             catch
             {
                 // evitar fallos en CI por cleanup
-=======
+            }
+        }
+
+        // ==========================================
+        // HELPERS DEL EQUIPO B (Mocking)
+        // ==========================================
         private class MockTaskService : TaskService
         {
             public int LastId;
             public string LastResponsible = string.Empty;
             public bool UpdateResult = true;
-
             public new bool UpdateTaskResponsible(int id, string responsible)
             {
                 LastId = id;
                 LastResponsible = responsible;
                 return UpdateResult;
->>>>>>> 192dfe93886e7660d0fbb0c6c3b839b1c6f05943
             }
         }
 
+
+        // ==========================================
+        // TESTS DE ELIMINAR TAREA (PromptDeleteTask)
+        // ==========================================
+
         [TestMethod]
-<<<<<<< HEAD
         public void PromptDeleteTask_InvalidInput_ShowsError()
         {
             var folder = CreateTempFolder(out var file);
             try
             {
                 var svc = new TaskService(folder, file);
-
                 var originalIn = Console.In;
                 var originalOut = Console.Out;
                 try
@@ -97,7 +96,6 @@ namespace TaskFlow.Utils.Tests
             try
             {
                 var svc = new TaskService(folder, file);
-
                 var originalIn = Console.In;
                 var originalOut = Console.Out;
                 try
@@ -139,7 +137,6 @@ namespace TaskFlow.Utils.Tests
                     using var writer = new StringWriter();
                     Console.SetOut(writer);
 
-                    // primera línea: id, segunda línea: confirmar con "s"
                     using var sr = new StringReader(id + Environment.NewLine + "s" + Environment.NewLine);
                     Console.SetIn(sr);
 
@@ -175,7 +172,6 @@ namespace TaskFlow.Utils.Tests
                     using var writer = new StringWriter();
                     Console.SetOut(writer);
 
-                    // id luego "n" para cancelar
                     using var sr = new StringReader(id + Environment.NewLine + "n" + Environment.NewLine);
                     Console.SetIn(sr);
 
@@ -194,8 +190,6 @@ namespace TaskFlow.Utils.Tests
             finally { Cleanup(folder, file); }
         }
 
-        // ----------------- Pruebas adicionales para aumentar cobertura -----------------
-
         [TestMethod]
         public void PromptDeleteTask_ConfirmWithUppercaseS_DeletesTask()
         {
@@ -213,7 +207,6 @@ namespace TaskFlow.Utils.Tests
                     using var writer = new StringWriter();
                     Console.SetOut(writer);
 
-                    // usar "S" en mayúscula para confirmar (se hace ToLower() en el método)
                     using var sr = new StringReader(id + Environment.NewLine + "S" + Environment.NewLine);
                     Console.SetIn(sr);
 
@@ -249,7 +242,6 @@ namespace TaskFlow.Utils.Tests
                     using var writer = new StringWriter();
                     Console.SetOut(writer);
 
-                    // confirmar con "si" (no es exactamente "s") => debe cancelar
                     using var sr = new StringReader(id + Environment.NewLine + "si" + Environment.NewLine);
                     Console.SetIn(sr);
 
@@ -285,7 +277,6 @@ namespace TaskFlow.Utils.Tests
                     using var writer = new StringWriter();
                     Console.SetOut(writer);
 
-                    // input con espacios alrededor del id, debe parsear correctamente
                     using var sr = new StringReader("  " + id + "  " + Environment.NewLine + "s" + Environment.NewLine);
                     Console.SetIn(sr);
 
@@ -314,9 +305,7 @@ namespace TaskFlow.Utils.Tests
                 svc.CreateTask("WithUpdate", "Desc", "R5");
                 var id = svc.GetTasks().First().Id;
 
-                // Forzar UpdatedAt a través de UpdateTaskStatus (mecanismo existente)
                 svc.UpdateTaskStatus(id, TaskStatus.EnProgreso);
-
                 var originalIn = Console.In;
                 var originalOut = Console.Out;
                 try
@@ -324,16 +313,13 @@ namespace TaskFlow.Utils.Tests
                     using var writer = new StringWriter();
                     Console.SetOut(writer);
 
-                    using var sr = new StringReader(id + Environment.NewLine + "n" + Environment.NewLine); // cancelar tras visualización
+                    using var sr = new StringReader(id + Environment.NewLine + "n" + Environment.NewLine);
                     Console.SetIn(sr);
-
                     ConsoleHelper.PromptDeleteTask(svc);
 
                     var output = writer.ToString();
-                    // Si UpdatedAt tiene valor, la vista NO debe mostrar "N/A" en la sección Modificada
                     Assert.IsFalse(output.Contains("Modificada: N/A"), "Cuando UpdatedAt existe, no debe mostrarse 'N/A'.");
                     Assert.IsTrue(output.Contains("Modificada:"), "Debe imprimirse la etiqueta de fecha de modificación.");
-                    // Aseguramos que la tarea no se eliminó por usar "n"
                     Assert.IsNotNull(svc.GetTaskById(id), "La tarea no debe haberse eliminado por cancelar.");
                 }
                 finally
@@ -345,7 +331,6 @@ namespace TaskFlow.Utils.Tests
             finally { Cleanup(folder, file); }
         }
 
-        // Nueva: comprueba que cuando UpdatedAt NO existe se vea "Modificada: N/A"
         [TestMethod]
         public void PromptDeleteTask_NoUpdatedAt_ShowsNA()
         {
@@ -381,7 +366,6 @@ namespace TaskFlow.Utils.Tests
             finally { Cleanup(folder, file); }
         }
 
-        // Nueva: verifica que se imprime la línea separadora de 40 guiones
         [TestMethod]
         public void PromptDeleteTask_PrintsDividerLine()
         {
@@ -416,7 +400,6 @@ namespace TaskFlow.Utils.Tests
             finally { Cleanup(folder, file); }
         }
 
-        // Nueva: llamadas secuenciales al prompt consumiendo múltiples líneas del mismo input
         [TestMethod]
         public void PromptDeleteTask_SequentialCalls_DeletesMultipleTasks()
         {
@@ -430,7 +413,6 @@ namespace TaskFlow.Utils.Tests
                 var tasks = svc.GetTasks().ToList();
                 var id1 = tasks[0].Id;
                 var id2 = tasks[1].Id;
-
                 var originalIn = Console.In;
                 var originalOut = Console.Out;
                 try
@@ -438,7 +420,6 @@ namespace TaskFlow.Utils.Tests
                     using var writer = new StringWriter();
                     Console.SetOut(writer);
 
-                    // proporcionamos entradas para dos prompts consecutivos
                     using var sr = new StringReader(
                         id1 + Environment.NewLine + "s" + Environment.NewLine +
                         id2 + Environment.NewLine + "s" + Environment.NewLine);
@@ -461,7 +442,6 @@ namespace TaskFlow.Utils.Tests
             finally { Cleanup(folder, file); }
         }
 
-        // Nueva: primer intento inválido y luego intento válido, usando el mismo stream de entrada
         [TestMethod]
         public void PromptDeleteTask_InvalidThenValid_AttemptsHandleBoth()
         {
@@ -479,15 +459,13 @@ namespace TaskFlow.Utils.Tests
                     using var writer = new StringWriter();
                     Console.SetOut(writer);
 
-                    // primer Prompt: entrada inválida -> "Entrada no válida"
-                    // segundo Prompt: id válido + confirmar -> elimina
                     using var sr = new StringReader(
                         "abc" + Environment.NewLine +
                         id + Environment.NewLine + "s" + Environment.NewLine);
                     Console.SetIn(sr);
 
-                    ConsoleHelper.PromptDeleteTask(svc); // consume "abc"
-                    ConsoleHelper.PromptDeleteTask(svc); // consume id + s
+                    ConsoleHelper.PromptDeleteTask(svc);
+                    ConsoleHelper.PromptDeleteTask(svc);
 
                     var output = writer.ToString();
                     Assert.IsTrue(output.Contains("Entrada no válida"), "Primer intento inválido debe informar error.");
@@ -502,7 +480,12 @@ namespace TaskFlow.Utils.Tests
             }
             finally { Cleanup(folder, file); }
         }
-=======
+
+        // ==================================================
+        // TESTS DE ACTUALIZAR RESPONSABLE (PromptUpdateResp)
+        // ==================================================
+
+        [TestMethod]
         public void PromptUpdateResponsible_IdNoValido_MuestraError()
         {
             var service = new MockTaskService();
@@ -512,7 +495,6 @@ namespace TaskFlow.Utils.Tests
             Console.SetOut(output);
 
             ConsoleHelper.PromptUpdateResponsible(service);
-
             StringAssert.Contains(output.ToString(), "Debe ingresar un número de ID válido");
         }
 
@@ -526,11 +508,9 @@ namespace TaskFlow.Utils.Tests
             Console.SetOut(output);
 
             ConsoleHelper.PromptUpdateResponsible(service);
-
             StringAssert.Contains(output.ToString(), "El nombre del responsable no puede estar vacío");
         }
 
-        
         [TestMethod]
         public void PromptUpdateResponsible_TareaNoEncontrada_MuestraError()
         {
@@ -541,11 +521,8 @@ namespace TaskFlow.Utils.Tests
             Console.SetOut(output);
 
             ConsoleHelper.PromptUpdateResponsible(service);
-
             StringAssert.Contains(output.ToString(), "No se encontró ninguna tarea con el ID #3");
         }
-        
-
 
         [TestMethod]
         public void PromptUpdateResponsible_ResponsableSoloEspacios_MuestraError()
@@ -557,7 +534,6 @@ namespace TaskFlow.Utils.Tests
             Console.SetOut(output);
 
             ConsoleHelper.PromptUpdateResponsible(service);
-
             StringAssert.Contains(output.ToString(), "El nombre del responsable no puede estar vacío");
         }
 
@@ -571,7 +547,6 @@ namespace TaskFlow.Utils.Tests
             Console.SetOut(output);
 
             ConsoleHelper.PromptUpdateResponsible(service);
-
             StringAssert.Contains(output.ToString(), "Debe ingresar un número de ID válido");
         }
 
@@ -585,10 +560,7 @@ namespace TaskFlow.Utils.Tests
             Console.SetOut(output);
 
             ConsoleHelper.PromptUpdateResponsible(service);
-
             StringAssert.Contains(output.ToString(), "El nombre del responsable no puede estar vacío");
         }
-
->>>>>>> 192dfe93886e7660d0fbb0c6c3b839b1c6f05943
     }
 }
