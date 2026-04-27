@@ -5,7 +5,11 @@ VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskFlow.Console", "TaskFlow.Console.csproj", "{A4E7D0B7-D2E8-4921-9AD3-C95B57517E2D}"
 EndProject
+<<<<<<< HEAD
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskFlow.ConsoleTests", "..\TaskFlow.ConsoleTests\TaskFlow.ConsoleTests.csproj", "{11EDFBDF-2837-46C9-9CA9-1432EB13163E}"
+=======
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskFlow.ConsoleTests", "..\TaskFlow.ConsoleTests\TaskFlow.ConsoleTests.csproj", "{08ED026B-49D2-4C8E-A7A4-DF3D5B9CEC68}"
+>>>>>>> 192dfe93886e7660d0fbb0c6c3b839b1c6f05943
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +21,17 @@ Global
 		{A4E7D0B7-D2E8-4921-9AD3-C95B57517E2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4E7D0B7-D2E8-4921-9AD3-C95B57517E2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4E7D0B7-D2E8-4921-9AD3-C95B57517E2D}.Release|Any CPU.Build.0 = Release|Any CPU
+<<<<<<< HEAD
 		{11EDFBDF-2837-46C9-9CA9-1432EB13163E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{11EDFBDF-2837-46C9-9CA9-1432EB13163E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11EDFBDF-2837-46C9-9CA9-1432EB13163E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11EDFBDF-2837-46C9-9CA9-1432EB13163E}.Release|Any CPU.Build.0 = Release|Any CPU
+=======
+		{08ED026B-49D2-4C8E-A7A4-DF3D5B9CEC68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08ED026B-49D2-4C8E-A7A4-DF3D5B9CEC68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08ED026B-49D2-4C8E-A7A4-DF3D5B9CEC68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08ED026B-49D2-4C8E-A7A4-DF3D5B9CEC68}.Release|Any CPU.Build.0 = Release|Any CPU
+>>>>>>> 192dfe93886e7660d0fbb0c6c3b839b1c6f05943
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
