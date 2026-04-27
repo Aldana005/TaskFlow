@@ -337,5 +337,58 @@ namespace TaskFlow.Services.Tests
                 Cleanup(folder);
             }
         }
+
+        // ==========================================
+        // TESTS: UpdateTaskStatus (Actualizar Estado)
+        // ==========================================
+
+        [TestMethod]
+        public void UpdateTaskStatus_TaskExists_UpdatesStatusAndReturnsTrue()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+
+                // 1. Preparamos el terreno: Creamos una tarea (nace como Pendiente)
+                svc.CreateTask("Aprender C#", "Desc", "Estudiante");
+                var id = svc.GetTasks()[0].Id; // Agarramos su ID
+
+                // 2. ACTUAMOS: Intentamos cambiarle el estado a 'EnProgreso'
+                bool result = svc.UpdateTaskStatus(id, global::TaskStatus.EnProgreso);
+
+                // 3. AFIRMAMOS (Asserts): Comprobamos que todo haya salido bien
+                Assert.IsTrue(result, "Debe devolver true si la tarea existe.");
+
+                var updatedTask = svc.GetTaskById(id);
+                Assert.AreEqual(global::TaskStatus.EnProgreso, updatedTask.Status, "El estado debe haberse actualizado.");
+                Assert.IsNotNull(updatedTask.UpdatedAt, "La fecha de actualización (UpdatedAt) debe haberse registrado.");
+            }
+            finally
+            {
+                Cleanup(folder);
+            }
+        }
+
+        [TestMethod]
+        public void UpdateTaskStatus_TaskDoesNotExist_ReturnsFalse()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+
+                // ACTUAMOS: Intentamos actualizar un ID que sabemos que no existe (999)
+                bool result = svc.UpdateTaskStatus(999, global::TaskStatus.Completada);
+
+                // AFIRMAMOS: El método debe ser inteligente y devolver false
+                Assert.IsFalse(result, "Debe devolver false si se le pasa un ID inexistente.");
+            }
+            finally
+            {
+                Cleanup(folder);
+            }
+        }
+
     }
 }
