@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 <<<<<<< HEAD
+<<<<<<< HEAD
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,12 +9,23 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using TaskFlow.Services;
 =======
+>>>>>>> 6934155f4dfdf3b63b06feb9b170032963f8b033
+=======
 using TaskFlow.Services;
+>>>>>>> 192dfe93886e7660d0fbb0c6c3b839b1c6f05943
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+<<<<<<< HEAD
+using System.Text.Json;
 using System.Threading.Tasks;
+<<<<<<< HEAD
+=======
+using TaskFlow.Services;
+=======
+using System.Threading.Tasks;
+>>>>>>> 6934155f4dfdf3b63b06feb9b170032963f8b033
 >>>>>>> 192dfe93886e7660d0fbb0c6c3b839b1c6f05943
 
 namespace TaskFlow.Services.Tests
@@ -21,6 +33,7 @@ namespace TaskFlow.Services.Tests
     [TestClass()]
     public class TaskServiceTests
     {
+<<<<<<< HEAD
 <<<<<<< HEAD
         // --- MÉTODOS DE APOYO (Helpers) ---
 
@@ -249,10 +262,182 @@ namespace TaskFlow.Services.Tests
                 // Restaurar atributos para permitir borrado
                 try { File.SetAttributes(file, FileAttributes.Normal); } catch { }
                 Cleanup(folder, file);
+=======
+        private static (string folder, string file) CreateTempPaths()
+        {
+            string folder = Path.Combine(Path.GetTempPath(), "TaskFlowTests", Guid.NewGuid().ToString());
+            string file = Path.Combine(folder, "tasks.json");
+            return (folder, file);
+        }
+
+        [TestMethod]
+        public void GetTaskById_NoTasks_ReturnsNull()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                var result = svc.GetTaskById(1);
+                Assert.IsNull(result);
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
             }
         }
 
         [TestMethod]
+        public void GetTaskById_SingleTask_ReturnsThatTask()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                svc.CreateTask("T1", "D1", "R1");
+
+                var t = svc.GetTaskById(1);
+                Assert.IsNotNull(t);
+                Assert.AreEqual(1, t.Id);
+                Assert.AreEqual("T1", t.Title);
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
+
+        [TestMethod]
+        public void GetTaskById_MultipleTasks_ReturnsCorrectById_First()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                svc.CreateTask("A", "a", "ra");
+                svc.CreateTask("B", "b", "rb");
+                svc.CreateTask("C", "c", "rc");
+
+                var t = svc.GetTaskById(1);
+                Assert.IsNotNull(t);
+                Assert.AreEqual("A", t.Title);
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
+
+        [TestMethod]
+        public void GetTaskById_MultipleTasks_ReturnsCorrectById_Last()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                svc.CreateTask("A", "a", "ra");
+                svc.CreateTask("B", "b", "rb");
+                svc.CreateTask("C", "c", "rc");
+
+                var t = svc.GetTaskById(3);
+                Assert.IsNotNull(t);
+                Assert.AreEqual("C", t.Title);
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
+
+        [TestMethod]
+        public void GetTaskById_NonExistingId_ReturnsNull()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                svc.CreateTask("Only", "only", "r");
+
+                var t = svc.GetTaskById(42);
+                Assert.IsNull(t);
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
+
+        [TestMethod]
+        public void GetTaskById_ZeroOrNegative_ReturnsNull()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                svc.CreateTask("T", "D", "R");
+
+                Assert.IsNull(svc.GetTaskById(0));
+                Assert.IsNull(svc.GetTaskById(-5));
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
+
+        [TestMethod]
+        public void GetTaskById_ReturnsReference_ModifyingReturnedAffectsService()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                svc.CreateTask("Orig", "Desc", "Resp");
+
+                var t = svc.GetTaskById(1);
+                Assert.IsNotNull(t);
+                t.Responsible = "Changed";
+
+                var t2 = svc.GetTaskById(1);
+                Assert.AreEqual("Changed", t2.Responsible, "La referencia devuelta debe ser la misma instancia almacenada internamente.");
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
+
+        [TestMethod]
+        public void GetTaskById_LoadedFile_ReturnsExpected()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                Directory.CreateDirectory(folder);
+
+                var tasks = new List<TaskItem>
+                {
+                    new TaskItem { Id = 100, Title = "T100", Description = "d1", Responsible = "r1", Status = TaskStatus.Pendiente, CreatedAt = DateTime.UtcNow },
+                    new TaskItem { Id = 200, Title = "T200", Description = "d2", Responsible = "r2", Status = TaskStatus.EnProgreso, CreatedAt = DateTime.UtcNow }
+                };
+
+                File.WriteAllText(file, JsonSerializer.Serialize(tasks, new JsonSerializerOptions { WriteIndented = true }));
+
+                var svc = new TaskService(folder, file);
+                var t = svc.GetTaskById(200);
+
+                Assert.IsNotNull(t);
+                Assert.AreEqual(200, t.Id);
+                Assert.AreEqual("T200", t.Title);
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+>>>>>>> 6934155f4dfdf3b63b06feb9b170032963f8b033
+            }
+        }
+
+        [TestMethod]
+<<<<<<< HEAD
         public void DeleteTask_DeleteNonexistentIdAfterLoading_ReturnsFalse()
         {
             var folder = CreateTempFolder(out var file);
@@ -366,10 +551,64 @@ namespace TaskFlow.Services.Tests
             {
                 try { lockStream?.Dispose(); } catch { }
                 Cleanup(folder, file);
+=======
+        public void GetTaskById_DuplicateIds_File_ReturnsFirstOccurrence()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                Directory.CreateDirectory(folder);
+
+                var tasks = new List<TaskItem>
+                {
+                    new TaskItem { Id = 1, Title = "First", Description = "x", Responsible = "a", CreatedAt = DateTime.UtcNow },
+                    new TaskItem { Id = 1, Title = "Second", Description = "y", Responsible = "b", CreatedAt = DateTime.UtcNow }
+                };
+
+                File.WriteAllText(file, JsonSerializer.Serialize(tasks, new JsonSerializerOptions { WriteIndented = true }));
+
+                var svc = new TaskService(folder, file);
+                var t = svc.GetTaskById(1);
+
+                Assert.IsNotNull(t);
+                Assert.AreEqual("First", t.Title, "Debe devolver la primera ocurrencia con el mismo Id.");
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
             }
         }
 
         [TestMethod]
+        public void GetTaskById_MaxIntId_File_ReturnsTask()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                Directory.CreateDirectory(folder);
+
+                var tasks = new List<TaskItem>
+                {
+                    new TaskItem { Id = int.MaxValue, Title = "MaxInt", Description = "mx", Responsible = "r", CreatedAt = DateTime.UtcNow }
+                };
+
+                File.WriteAllText(file, JsonSerializer.Serialize(tasks, new JsonSerializerOptions { WriteIndented = true }));
+
+                var svc = new TaskService(folder, file);
+                var t = svc.GetTaskById(int.MaxValue);
+
+                Assert.IsNotNull(t);
+                Assert.AreEqual("MaxInt", t.Title);
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+>>>>>>> 6934155f4dfdf3b63b06feb9b170032963f8b033
+            }
+        }
+
+        [TestMethod]
+<<<<<<< HEAD
         public void DeleteTask_DeleteZeroId_RemovesCorrectly()
         {
             var folder = CreateTempFolder(out var file);
@@ -390,6 +629,67 @@ namespace TaskFlow.Services.Tests
                 Assert.IsFalse(File.ReadAllText(file).Contains("\"Id\": 0"), "El JSON persistido no debe contener el Id 0 eliminado.");
             }
             finally { Cleanup(folder, file); }
+=======
+        public void GetTaskById_ZeroAndNegativeIdsLoaded_ReturnsThem()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                Directory.CreateDirectory(folder);
+
+                var tasks = new List<TaskItem>
+                {
+                    new TaskItem { Id = 0, Title = "Zero", Description = "z", Responsible = "rz", CreatedAt = DateTime.UtcNow },
+                    new TaskItem { Id = -5, Title = "NegFive", Description = "n", Responsible = "rn", CreatedAt = DateTime.UtcNow }
+                };
+
+                File.WriteAllText(file, JsonSerializer.Serialize(tasks, new JsonSerializerOptions { WriteIndented = true }));
+
+                var svc = new TaskService(folder, file);
+                var t0 = svc.GetTaskById(0);
+                var tn = svc.GetTaskById(-5);
+
+                Assert.IsNotNull(t0);
+                Assert.AreEqual("Zero", t0.Title);
+
+                Assert.IsNotNull(tn);
+                Assert.AreEqual("NegFive", tn.Title);
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
+
+        [TestMethod]
+        public void GetTaskById_LargeList_File_ReturnsCorrectItem()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                Directory.CreateDirectory(folder);
+
+                const int count = 500;
+                var tasks = new List<TaskItem>(count);
+                for (int i = 1; i <= count; i++)
+                {
+                    tasks.Add(new TaskItem { Id = i * 10, Title = $"T{i * 10}", CreatedAt = DateTime.UtcNow });
+                }
+
+                File.WriteAllText(file, JsonSerializer.Serialize(tasks));
+
+                var svc = new TaskService(folder, file);
+                int target = 2500; // exists because 250 * 10 = 2500 and count = 500
+                var t = svc.GetTaskById(target);
+
+                Assert.IsNotNull(t);
+                Assert.AreEqual($"T{target}", t.Title);
+            }
+            finally
+            {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+>>>>>>> 6934155f4dfdf3b63b06feb9b170032963f8b033
 =======
         private string testFolder = "test_data";
         private string testFile = "test_data/tasks_test.json";
