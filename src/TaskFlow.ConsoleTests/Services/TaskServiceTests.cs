@@ -231,5 +231,111 @@ namespace TaskFlow.Services.Tests
                 Cleanup(folder);
             }
         }
+
+        // ==========================================
+        // TESTS: GetTasks (Listar tareas)
+        // ==========================================
+
+        [TestMethod]
+        public void GetTasks_NoTasks_ReturnsEmptyList()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+
+                var result = svc.GetTasks();
+
+                Assert.IsNotNull(result);
+                Assert.AreEqual(0, result.Count, "Si no hay tareas, la lista debe venir vacía.");
+            }
+            finally
+            {
+                Cleanup(folder);
+            }
+        }
+
+        [TestMethod]
+        public void GetTasks_WithTasks_ReturnsAllTasks()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                svc.CreateTask("Tarea A", "D", "X");
+                svc.CreateTask("Tarea B", "D", "Y");
+
+                var list = svc.GetTasks();
+
+                Assert.AreEqual(2, list.Count);
+                CollectionAssert.AreEquivalent(new[] { "Tarea A", "Tarea B" }, list.Select(t => t.Title).ToArray());
+            }
+            finally
+            {
+                Cleanup(folder);
+            }
+        }
+
+        [TestMethod]
+        public void GetTasks_FilterByStatus_ReturnsOnlyMatching()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                svc.CreateTask("Pendiente 1", "D", "A");   // Id 1 - Pendiente
+                svc.CreateTask("EnProgreso 1", "D", "B"); // Id 2 - Pendiente -> cambiar a EnProgreso
+                svc.CreateTask("Completada 1", "D", "C"); // Id 3 - Pendiente -> cambiar a Completada
+
+                // Cambiamos estados
+                Assert.IsTrue(svc.UpdateTaskStatus(2, global::TaskStatus.EnProgreso));
+                Assert.IsTrue(svc.UpdateTaskStatus(3, global::TaskStatus.Completada));
+
+                var all = svc.GetTasks();
+                Assert.AreEqual(3, all.Count, "Debe devolver todas las tareas sin filtro.");
+
+                var enProgreso = svc.GetTasks(global::TaskStatus.EnProgreso);
+                Assert.AreEqual(1, enProgreso.Count);
+                Assert.AreEqual("EnProgreso 1", enProgreso[0].Title);
+
+                var completadas = svc.GetTasks(global::TaskStatus.Completada);
+                Assert.AreEqual(1, completadas.Count);
+                Assert.AreEqual("Completada 1", completadas[0].Title);
+            }
+            finally
+            {
+                Cleanup(folder);
+            }
+        }
+
+        [TestMethod]
+        public void GetTasks_LoadsFromJsonFile_ReturnsDataAndRespectsFilter()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                Directory.CreateDirectory(folder);
+                var list = new List<TaskItem>
+                {
+                    new TaskItem { Id = 10, Title = "T1", Description = "d", Responsible = "R", Status = global::TaskStatus.Pendiente },
+                    new TaskItem { Id = 20, Title = "T2", Description = "d", Responsible = "R", Status = global::TaskStatus.EnProgreso },
+                    new TaskItem { Id = 30, Title = "T3", Description = "d", Responsible = "R", Status = global::TaskStatus.Completada }
+                };
+                File.WriteAllText(file, JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true }));
+
+                var svc = new TaskService(folder, file); // carga desde archivo
+
+                var all = svc.GetTasks();
+                Assert.AreEqual(3, all.Count);
+
+                var enProgreso = svc.GetTasks(global::TaskStatus.EnProgreso);
+                Assert.AreEqual(1, enProgreso.Count);
+                Assert.AreEqual("T2", enProgreso[0].Title);
+            }
+            finally
+            {
+                Cleanup(folder);
+            }
+        }
     }
 }
