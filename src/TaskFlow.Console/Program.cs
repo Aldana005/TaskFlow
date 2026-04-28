@@ -3,9 +3,9 @@ using TaskFlow.Utils;
 // Asegúrense de que el namespace de su ConsoleHelper esté referenciado aquí
 
 
-class Program
+public class Program
 {
-    static void Main(string[] args)
+    public static void Main(string[] args)
     {
         // Instanciamos el servicio una sola vez. 
         // Esta instancia guarda la lista de tareas en memoria mientras el programa esté abierto.
@@ -20,6 +20,7 @@ class Program
             Console.WriteLine("3. Actualizar estado");
             Console.WriteLine("4. Cambiar Responsable");
             Console.WriteLine("5. Eliminar tarea");
+            Console.WriteLine("Presione cualquier otra tecla para salir.");
             Console.Write("Seleccione una opción: ");
 
             string option = Console.ReadLine();
@@ -51,7 +52,11 @@ class Program
                     ConsoleHelper.PromptDeleteTask(taskService);
                     break;
 
-
+                default:
+                    // Cualquier otra tecla / entrada hace que salgamos del menú
+                    Console.WriteLine("\nSaliendo. ¡Hasta luego!");
+                    exit = true;
+                    break;
             }
         }
     }
