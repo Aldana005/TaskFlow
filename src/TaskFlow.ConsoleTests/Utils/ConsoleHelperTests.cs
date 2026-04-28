@@ -669,5 +669,107 @@ namespace TaskFlow.Utils.Tests
             ConsoleHelper.PromptUpdateResponsible(service);
             StringAssert.Contains(output.ToString(), "El nombre del responsable no puede estar vacío");
         }
+        [TestMethod]
+        public void PrintTaskList_Empty_ShowsInfoMessage()
+        {
+            var originalOut = Console.Out;
+            try
+            {
+                using var writer = new StringWriter();
+                Console.SetOut(writer);
+
+                ConsoleHelper.PrintTaskList(new List<TaskItem>());
+                StringAssert.Contains(writer.ToString(), "No hay tareas");
+            }
+            finally { Console.SetOut(originalOut); }
+        }
+
+        [TestMethod]
+        public void PromptUpdateStatus_NonNumericId_ShowsError()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                var originalIn = Console.In;
+                var originalOut = Console.Out;
+                try
+                {
+                    using var writer = new StringWriter();
+                    Console.SetOut(writer);
+                    using var sr = new StringReader("abc\n");
+                    Console.SetIn(sr);
+
+                    ConsoleHelper.PromptUpdateStatus(svc);
+                    StringAssert.Contains(writer.ToString(), "Debe ingresar un número de ID válido");
+                }
+                finally { Console.SetIn(originalIn); Console.SetOut(originalOut); }
+            }
+            finally { Cleanup(folder,file); }
+        }
+
+        [TestMethod]
+        public void PromptUpdateResponsible_EmptyResponsible_ShowsError()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                svc.CreateTask("T", null, "R");
+
+                var originalIn = Console.In;
+                var originalOut = Console.Out;
+                try
+                {
+                    using var writer = new StringWriter();
+                    Console.SetOut(writer);
+                    // first line: id, second line: empty responsible
+                    using var sr = new StringReader("1\n   \n");
+                    Console.SetIn(sr);
+
+                    ConsoleHelper.PromptUpdateResponsible(svc);
+                    StringAssert.Contains(writer.ToString(), "El nombre del responsable no puede estar vacío");
+                }
+                finally { Console.SetIn(originalIn); Console.SetOut(originalOut); }
+            }
+            finally { Cleanup(folder,file); }
+        }
+
+        [TestMethod]
+        public void PromptDeleteTask_Cancel_ShowsCancelled()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                svc.CreateTask("T", null, "R");
+
+                var originalIn = Console.In;
+                var originalOut = Console.Out;
+                try
+                {
+                    using var writer = new StringWriter();
+                    Console.SetOut(writer);
+                    // id, then 'n' to cancel
+                    using var sr = new StringReader("1\nn\n");
+                    Console.SetIn(sr);
+
+                    ConsoleHelper.PromptDeleteTask(svc);
+                    StringAssert.Contains(writer.ToString(), "Operación cancelada");
+                    // ensure task still exists
+                    Assert.IsNotNull(svc.GetTaskById(1));
+                }
+                finally { Console.SetIn(originalIn); Console.SetOut(originalOut); }
+            }
+            finally { Cleanup(folder,file); }
+        }
+
+        private (string folder, string file) CreateTempPaths()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "TaskFlowTests", Guid.NewGuid().ToString());
+            Directory.CreateDirectory(folder);
+            var file = Path.Combine(folder, "tasks.json");
+            return (folder, file);
+        }
     }
 }

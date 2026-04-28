@@ -483,6 +483,43 @@ namespace TaskFlow.Services.Tests
                 Cleanup(folder);
             }
         }
+        [TestMethod]
+        public void HasTasks_ReturnsFalseWhenEmpty_TrueWhenHas()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+                Assert.IsFalse(svc.HasTasks());
+                svc.CreateTask("T", null, null);
+                Assert.IsTrue(svc.HasTasks());
+            }
+            finally { Cleanup(folder); }
+        }
+
+        [TestMethod]
+        public void LoadTasks_MalformedJson_DoesNotThrow_LeavesEmpty_AndLogsError()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                Directory.CreateDirectory(folder);
+                File.WriteAllText(file, "this is not json");
+
+                var originalOut = Console.Out;
+                try
+                {
+                    using var writer = new StringWriter();
+                    Console.SetOut(writer);
+
+                    var svc = new TaskService(folder, file); // should catch and log
+                    Assert.AreEqual(0, svc.GetTasks().Count);
+                    StringAssert.Contains(writer.ToString(), "No se pudo cargar el archivo JSON");
+                }
+                finally { Console.SetOut(originalOut); }
+            }
+            finally { Cleanup(folder); }
+        }
 
     }
 }
