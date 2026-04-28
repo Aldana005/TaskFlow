@@ -33,6 +33,100 @@ namespace TaskFlow.Services.Tests
                 // No lanzar excepción en cleanup para evitar falsos negativos
             }
         }
+        // ==========================================
+        // TESTS: CreateTask (Crear Tarea)
+        // ==========================================
+        [TestMethod]
+        public void CreateTask_AddsTask_And_SavesFile()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+
+                svc.CreateTask("Tarea de prueba", "Descripción", "Responsable");
+
+                // Archivo creado
+                Assert.IsTrue(File.Exists(file), "El archivo JSON debe existir después de crear una tarea.");
+
+                // Tarea en memoria
+                var tasks = svc.GetTasks();
+                Assert.AreEqual(1, tasks.Count, "Debe existir exactamente una tarea.");
+
+                var task = tasks.First();
+                Assert.AreEqual(1, task.Id);
+                Assert.AreEqual("Tarea de prueba", task.Title);
+                Assert.AreEqual("Descripción", task.Description);
+                Assert.AreEqual("Responsable", task.Responsible);
+                Assert.AreEqual(global::TaskStatus.Pendiente, task.Status);
+                Assert.IsTrue((DateTime.Now - task.CreatedAt).TotalSeconds < 5, "CreatedAt debe ser reciente.");
+            }
+            finally
+            {
+                Cleanup(folder);
+            }
+        }
+
+        [TestMethod]
+        public void CreateTask_SecondTask_IncrementsId()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+
+                svc.CreateTask("T1", "D1", "R1");
+                svc.CreateTask("T2", "D2", "R2");
+
+                var tasks = svc.GetTasks();
+                Assert.AreEqual(2, tasks.Count, "Deben existir dos tareas.");
+                Assert.IsTrue(tasks.Any(t => t.Id == 1 && t.Title == "T1"));
+                Assert.IsTrue(tasks.Any(t => t.Id == 2 && t.Title == "T2"));
+            }
+            finally
+            {
+                Cleanup(folder);
+            }
+        }
+
+        [TestMethod]
+        public void CreateTask_WithEmptyTitle_ThrowsArgumentException()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+
+                Assert.ThrowsException<ArgumentException>(() => svc.CreateTask("", "d", "r"));
+                Assert.ThrowsException<ArgumentException>(() => svc.CreateTask("   ", "d", "r"));
+                Assert.ThrowsException<ArgumentException>(() => svc.CreateTask(null, "d", "r"));
+            }
+            finally
+            {
+                Cleanup(folder);
+            }
+        }
+
+        [TestMethod]
+        public void CreateTask_AllowsNullOptionalFields()
+        {
+            var (folder, file) = CreateTempPaths();
+            try
+            {
+                var svc = new TaskService(folder, file);
+
+                svc.CreateTask("SoloTitulo", null, null);
+
+                var task = svc.GetTasks().First();
+                Assert.AreEqual("SoloTitulo", task.Title);
+                Assert.IsNull(task.Description);
+                Assert.IsNull(task.Responsible);
+            }
+            finally
+            {
+                Cleanup(folder);
+            }
+        }
 
         // ==========================================
         // TESTS: DeleteTask (Eliminar Tarea)

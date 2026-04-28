@@ -36,6 +36,113 @@ namespace TaskFlow.Utils.Tests
                 // evitar fallos en CI por cleanup
             }
         }
+        // ==========================================
+        // TESTS DE CREAR TAREAS(PromptCreateTask)
+        // ==========================================
+        [TestMethod]
+        public void PromptCreateTask_ValidInput_CreatesTaskAndShowsSuccess()
+        {
+            var folder = CreateTempFolder(out var file);
+            try
+            {
+                var svc = new TaskService(folder, file);
+
+                var originalIn = Console.In;
+                var originalOut = Console.Out;
+                try
+                {
+                    using var writer = new StringWriter();
+                    Console.SetOut(writer);
+
+                    // Título, descripción, responsable
+                    using var sr = new StringReader("Mi Tarea\nDescripción de prueba\nResponsableX\n");
+                    Console.SetIn(sr);
+
+                    ConsoleHelper.PromptCreateTask(svc);
+
+                    var output = writer.ToString();
+                    Assert.IsTrue(output.Contains("[Éxito]") || output.Contains("creada"), "Debe mostrar mensaje de éxito al crear la tarea.");
+
+                    var tasks = svc.GetTasks();
+                    Assert.IsTrue(tasks.Any(t => t.Title == "Mi Tarea" && t.Responsible == "ResponsableX"), "La tarea debe quedar registrada en el servicio.");
+                }
+                finally
+                {
+                    Console.SetIn(originalIn);
+                    Console.SetOut(originalOut);
+                }
+            }
+            finally { Cleanup(folder, file); }
+        }
+
+        [TestMethod]
+        public void PromptCreateTask_EmptyTitle_RepeatsPromptUntilValid()
+        {
+            var folder = CreateTempFolder(out var file);
+            try
+            {
+                var svc = new TaskService(folder, file);
+
+                var originalIn = Console.In;
+                var originalOut = Console.Out;
+                try
+                {
+                    using var writer = new StringWriter();
+                    Console.SetOut(writer);
+
+                    // Primeros dos inputs de título vacíos, luego título válido, descripción y responsable
+                    using var sr = new StringReader("\n   \nTítuloFinal\nDesc\nResp\n");
+                    Console.SetIn(sr);
+
+                    ConsoleHelper.PromptCreateTask(svc);
+
+                    var output = writer.ToString();
+                    // Debe haber solicitado el título reiteradas veces (comprobamos que se haya creado la tarea correcta)
+                    var tasks = svc.GetTasks();
+                    Assert.IsTrue(tasks.Any(t => t.Title == "TítuloFinal"), "Después de reintentos, la tarea con título válido debe crearse.");
+                }
+                finally
+                {
+                    Console.SetIn(originalIn);
+                    Console.SetOut(originalOut);
+                }
+            }
+            finally { Cleanup(folder, file); }
+        }
+        
+        [TestMethod]
+        public void PromptCreateTask_ServiceThrows_ShowsErrorMessage()
+        {
+            // Provocamos una excepción en SaveTasks pasando customFile igual al folder (escribirá en una "ruta" que es un directorio)
+            var folder = CreateTempFolder(out var file);
+            try
+            {
+                // Aquí pasamos customFile igual al folder para forzar que File.WriteAllText intente escribir en un directorio y lance.
+                var svc = new TaskService(folder, folder);
+
+                var originalIn = Console.In;
+                var originalOut = Console.Out;
+                try
+                {
+                    using var writer = new StringWriter();
+                    Console.SetOut(writer);
+
+                    using var sr = new StringReader("TituloError\nDesc\nResp\n");
+                    Console.SetIn(sr);
+
+                    ConsoleHelper.PromptCreateTask(svc);
+
+                    var output = writer.ToString();
+                    Assert.IsTrue(output.Contains("[Error]") || output.Contains("Error"), "Si el servicio lanza, debe mostrarse un mensaje de error.");
+                }
+                finally
+                {
+                    Console.SetIn(originalIn);
+                    Console.SetOut(originalOut);
+                }
+            }
+            finally { Cleanup(folder, file); }
+        }
 
         // ==========================================
         // HELPERS DEL EQUIPO B (Mocking)
