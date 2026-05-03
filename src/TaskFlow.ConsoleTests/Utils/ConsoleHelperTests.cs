@@ -771,5 +771,62 @@ namespace TaskFlow.Utils.Tests
             var file = Path.Combine(folder, "tasks.json");
             return (folder, file);
         }
+
+        [TestMethod]
+        public void PromptLogin_CaminoFeliz_DatosCorrectos_RetornaTrue()
+        {
+            // Arrange
+            var authService = new AuthService();
+
+            // Simulamos lo que el usuario tipea separado por \n (que equivale a apretar Enter)
+            // Primero "Aldana" [Enter], luego "Sánchez" [Enter]
+            var entradaSimulada = new StringReader("Aldana\nSánchez\n");
+            Console.SetIn(entradaSimulada);
+
+            // Redirigimos la salida (WriteLine) a la nada misma para que no ensucie el test
+            Console.SetOut(new StringWriter());
+
+            // Act
+            bool result = ConsoleHelper.PromptLogin(authService);
+
+            // Assert
+            Assert.IsTrue(result, "Debería retornar true cuando las credenciales son correctas.");
+        }
+
+        [TestMethod]
+        public void PromptLogin_CaminoTriste_DatosIncorrectosEligeSalir_RetornaFalse()
+        {
+            // Arrange
+            var authService = new AuthService();
+
+            // Simulamos: "Juan" [Enter], "Falso" [Enter], ¿Intentar de nuevo? "N" [Enter]
+            var entradaSimulada = new StringReader("Juan\nFalso\nN\n");
+            Console.SetIn(entradaSimulada);
+            Console.SetOut(new StringWriter());
+
+            // Act
+            bool result = ConsoleHelper.PromptLogin(authService);
+
+            // Assert
+            Assert.IsFalse(result, "Debería retornar false cuando falla y el usuario no quiere reintentar.");
+        }
+
+        [TestMethod]
+        public void PromptLogin_CaminoRecuperacion_FallaYLuegoAcierta_RetornaTrue()
+        {
+            // Arrange
+            var authService = new AuthService();
+
+            // Simulamos: Falla primero ("Usuario\nMal\n"), dice que SÍ quiere intentar ("S\n"), y acierta ("Aldana\nSánchez\n")
+            var entradaSimulada = new StringReader("Usuario\nMal\nS\nAldana\nSánchez\n");
+            Console.SetIn(entradaSimulada);
+            Console.SetOut(new StringWriter());
+
+            // Act
+            bool result = ConsoleHelper.PromptLogin(authService);
+
+            // Assert
+            Assert.IsTrue(result, "Debería retornar true si falla la primera vez pero acierta en el reintento.");
+        }
     }
 }
