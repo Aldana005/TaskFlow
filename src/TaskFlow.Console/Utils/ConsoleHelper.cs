@@ -36,12 +36,12 @@ namespace TaskFlow.Utils
 
         public static void PromptListTasks(TaskService taskService)
         {
-            Console.WriteLine("\n--- FILTROS DE B�SQUEDA ---");
+            Console.WriteLine("\n--- FILTROS DE BÚSQUEDA ---");
             Console.WriteLine("1. Mostrar Todas");
             Console.WriteLine("2. Solo Pendientes");
             Console.WriteLine("3. Solo En Progreso");
             Console.WriteLine("4. Solo Completadas");
-            Console.Write("Seleccione una opci�n (1-4): ");
+            Console.Write("Seleccione una opción (1-4): ");
 
             string choice = Console.ReadLine();
             List<TaskItem> result;
@@ -68,7 +68,7 @@ namespace TaskFlow.Utils
         {
             if (tasks.Count == 0)
             {
-                Console.WriteLine("\n[Info] No hay tareas que coincidan con la b�squeda.");
+                Console.WriteLine("\n[Info] No hay tareas que coincidan con la búsqueda.");
                 return;
             }
 
@@ -81,7 +81,7 @@ namespace TaskFlow.Utils
 
                 string updatedDate = task.UpdatedAt.HasValue ? task.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm") : "N/A";
 
-                Console.WriteLine($"ID: {task.Id} | T�tulo: {task.Title}");
+                Console.WriteLine($"ID: {task.Id} | Título: {task.Title}");
 
                 Console.WriteLine($"Responsable: {task.Responsible} | Estado: {task.Status}");
 
