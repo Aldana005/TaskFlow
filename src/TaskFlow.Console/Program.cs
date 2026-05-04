@@ -1,5 +1,8 @@
+
+using TaskFlow.Models;
 using TaskFlow.Services;
 using TaskFlow.Utils;
+
 // Asegúrense de que el namespace de su ConsoleHelper esté referenciado aquí
 
 
@@ -9,7 +12,15 @@ public class Program
     {
         // Instanciamos el servicio una sola vez. 
         // Esta instancia guarda la lista de tareas en memoria mientras el programa esté abierto.
+
+        AuthService authService = new AuthService(); 
         TaskService taskService = new TaskService();
+        if (!ConsoleHelper.PromptLogin(authService))
+        {
+            Console.WriteLine("Cerrando la aplicación. ¡Hasta luego!");
+            return; // Termina la ejecución
+        }
+
         bool exit = false;
 
         while (!exit)

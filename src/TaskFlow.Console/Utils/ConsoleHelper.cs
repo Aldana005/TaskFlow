@@ -5,7 +5,8 @@ namespace TaskFlow.Utils
 {
     public class ConsoleHelper
     {
-        
+
+
         public static void PromptCreateTask(TaskService taskService)
         {
             Console.WriteLine("\n--- CREAR NUEVA TAREA ---");
@@ -90,7 +91,7 @@ namespace TaskFlow.Utils
             }
         }
 
-        public static void PromptUpdateStatus(TaskService taskService) 
+        public static void PromptUpdateStatus(TaskService taskService)
         {
 
             Console.WriteLine("\n--- ACTUALIZAR ESTADO DE TAREA ---");
@@ -149,7 +150,7 @@ namespace TaskFlow.Utils
 
         }
 
-        public static void PromptUpdateResponsible(TaskService taskService) 
+        public static void PromptUpdateResponsible(TaskService taskService)
         {
             Console.WriteLine("\n--- ACTUALIZAR RESPONSABLE DE TAREA ---");
             Console.Write("Ingrese el ID de la tarea a modificar: ");
@@ -184,16 +185,16 @@ namespace TaskFlow.Utils
             else
             {
                 Console.WriteLine("\n[Error] Debe ingresar un número de ID válido.");
-            }   
+            }
         }
 
-        public static void PromptDeleteTask(TaskService taskService) 
+        public static void PromptDeleteTask(TaskService taskService)
         {
             Console.WriteLine("\n--- ELIMINAR TAREA ---");
             Console.Write("Ingrese el ID de la tarea a eliminar: ");
 
-            if (int.TryParse(Console.ReadLine(), out int id)) 
-    {
+            if (int.TryParse(Console.ReadLine(), out int id))
+            {
                 // Usamos la nueva función del servicio
                 var task = taskService.GetTaskById(id);
 
@@ -223,6 +224,39 @@ namespace TaskFlow.Utils
                 Console.WriteLine("\n[Error] Entrada no válida.");
             }
         }
+
+        public static bool PromptLogin(AuthService authService)
+        {
+            Console.WriteLine("\n=== TASKFLOW: INICIO DE SESIÓN ===");
+
+            while (true)
+            {
+                Console.Write("Ingrese su Nombre: ");
+                string nombre = Console.ReadLine();
+
+                Console.Write("Ingrese su Apellido: ");
+                string apellido = Console.ReadLine();
+
+                // Validamos
+                if (authService.Authenticate(nombre, apellido))
+                {
+                    Console.WriteLine($"\n[Éxito] ¡Bienvenida, {nombre}! Acceso concedido.");
+                    return true; // Login exitoso
+                }
+                else
+                {
+                    Console.WriteLine("\n[Error] Acceso denegado. Sus datos no coinciden.");
+                    Console.Write("¿Desea intentar de nuevo? (S/N): ");
+
+                    if (Console.ReadLine()?.Trim().ToUpper() != "S")
+                    {
+                        return false; // El usuario decide salir
+                    }
+                    Console.WriteLine(); // Espacio para el próximo intento
+                }
+            }
+        }
+
     }
 
 }
