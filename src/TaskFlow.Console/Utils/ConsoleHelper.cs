@@ -27,10 +27,11 @@ namespace TaskFlow.Utils
             try
             {
                 taskService.CreateTask(title, description, responsible);
+                
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"\n[Error] {ex.Message}");
+                PrintColorMessage($"\n[Error] {ex.Message}", ConsoleColor.Red);
             }
         }
 
@@ -58,7 +59,7 @@ namespace TaskFlow.Utils
                     result = taskService.GetTasks(TaskStatus.Completada);
                     break;
                 default:
-                    // Cualquier otra opci�n (incluyendo el 1) muestra todas
+                    // Cualquier otra opción (incluyendo el 1) muestra todas
                     result = taskService.GetTasks();
                     break;
             }
@@ -68,7 +69,8 @@ namespace TaskFlow.Utils
         {
             if (tasks.Count == 0)
             {
-                Console.WriteLine("\n[Info] No hay tareas que coincidan con la búsqueda.");
+                // Usamos tu nuevo método de color para los avisos
+                PrintColorMessage("\n No hay tareas creadas.", ConsoleColor.Yellow);
                 return;
             }
 
@@ -76,18 +78,21 @@ namespace TaskFlow.Utils
 
             foreach (var task in tasks)
             {
-
-                // Formateamos la fecha de actualizaci�n si existe, si no, mostramos "N/A"
-
                 string updatedDate = task.UpdatedAt.HasValue ? task.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm") : "N/A";
 
-                Console.WriteLine($"ID: {task.Id} | Título: {task.Title}");
+                // Preparamos la columna izquierda reservando siempre 30 espacios de ancho
+                string colIzq1 = $"ID: {task.Id}";
+                string colIzq2 = $"Responsable: {task.Responsible}";
+                string colIzq3 = $"Creada: {task.CreatedAt:dd/MM/yyyy HH:mm}";
 
-                Console.WriteLine($"Responsable: {task.Responsible} | Estado: {task.Status}");
+                // Al imprimir, aplicamos el -30 a las variables de la izquierda
+                Console.WriteLine($"{colIzq1,-30} | Título: {task.Title}");
+                Console.WriteLine($"{colIzq2,-30} | Estado: {task.Status}");
+                Console.WriteLine($"{colIzq3,-30} | Modificada: {updatedDate}");
 
-                Console.WriteLine($"Creada: {task.CreatedAt:dd/MM/yyyy HH:mm} | Modificada: {updatedDate}");
-
-                Console.WriteLine(new string('-', 40));
+                // Alargamos un poco la línea de guiones para que cubra la nueva tarjeta
+                // (Los tests de tu equipo piden al menos 40 guiones, así que poner 65 es seguro y pasa igual)
+                Console.WriteLine(new string('-', 65));
             }
         }
 
@@ -119,7 +124,7 @@ namespace TaskFlow.Utils
                 else if (statusChoice == "2")
                 {
                     newStatus = TaskStatus.EnProgreso;
-                    newStatus = TaskStatus.EnProgreso;
+                    
                 }
                 else if (statusChoice == "3")
                 {
@@ -127,7 +132,7 @@ namespace TaskFlow.Utils
                 }
                 else
                 {
-                    Console.WriteLine("\n[Error] Opción de estado no válida.");
+                    PrintColorMessage("\n Opcción de estado no valida.", ConsoleColor.Red);
                     return; // Salimos del método si se equivoca
                 }
                 // Llamamos al servicio que creamos en el commit anterior
@@ -135,16 +140,16 @@ namespace TaskFlow.Utils
 
                 if (success)
                 {
-                    Console.WriteLine($"\n[Éxito] El estado de la tarea #{id} fue actualizado a {newStatus}.");
+                    PrintColorMessage($"\n El estado de la tarea #{id} fue actualizado a {newStatus}.", ConsoleColor.Green);
                 }
                 else
                 {
-                    Console.WriteLine($"\n[Error] No se encontró ninguna tarea con el ID #{id}.");
+                    PrintColorMessage($"\n No se encontró ninguna tarea con el ID #{id}.", ConsoleColor.Red);
                 }
             }
             else
             {
-                Console.WriteLine("\n[Error] Debe ingresar un número de ID válido.");
+                PrintColorMessage("\nDebe ingresar un número de ID válido.",ConsoleColor.Red);
             }
 
 
@@ -166,7 +171,7 @@ namespace TaskFlow.Utils
                 // Pequeña validación para que no pongan un responsable vacío
                 if (string.IsNullOrWhiteSpace(newResponsible))
                 {
-                    Console.WriteLine("\n[Error] El nombre del responsable no puede estar vacío.");
+                    PrintColorMessage("\n El nombre del responsable no puede estar vacío.", ConsoleColor.Red);
                     return;
                 }
 
@@ -175,16 +180,16 @@ namespace TaskFlow.Utils
 
                 if (success)
                 {
-                    Console.WriteLine($"\n[Éxito] El responsable de la tarea #{id} fue actualizado a '{newResponsible}'.");
+                    PrintColorMessage($"\n El responsable de la tarea #{id} fue actualizado a '{newResponsible}'.", ConsoleColor.Green);
                 }
                 else
                 {
-                    Console.WriteLine($"\n[Error] No se encontró ninguna tarea con el ID #{id}.");
+                    PrintColorMessage($"\n[Error] No se encontró ninguna tarea con el ID #{id}.", ConsoleColor.Yellow);
                 }
             }
             else
             {
-                Console.WriteLine("\n[Error] Debe ingresar un número de ID válido.");
+                PrintColorMessage("\n[Error] Debe ingresar un número de ID válido.", ConsoleColor.Red);
             }
         }
 
@@ -207,21 +212,21 @@ namespace TaskFlow.Utils
                     if (Console.ReadLine().ToLower() == "s")
                     {
                         taskService.DeleteTask(id);
-                        Console.WriteLine("\n[Éxito] Tarea eliminada correctamente.");
+                        PrintColorMessage("\n Tarea eliminada correctamente.", ConsoleColor.Green);
                     }
                     else
                     {
-                        Console.WriteLine("\n[Info] Operación cancelada.");
+                        PrintColorMessage("\n Operación cancelada.", ConsoleColor.Red);
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"\n[Error] No se encontró la tarea con ID #{id}.");
+                    PrintColorMessage($"\n No se encontró la tarea con ID #{id}.", ConsoleColor.Yellow);
                 }
             }
             else
             {
-                Console.WriteLine("\n[Error] Entrada no válida.");
+                PrintColorMessage("\n Entrada no válida.", ConsoleColor.Red);
             }
         }
 
@@ -240,12 +245,12 @@ namespace TaskFlow.Utils
                 // Validamos
                 if (authService.Authenticate(nombre, apellido))
                 {
-                    Console.WriteLine($"\n[Éxito] ¡Bienvenida, {nombre}! Acceso concedido.");
+                    PrintColorMessage($"\n ¡Bienvenida, {nombre}! Acceso concedido.", ConsoleColor.Green);
                     return true; // Login exitoso
                 }
                 else
                 {
-                    Console.WriteLine("\n[Error] Acceso denegado. Sus datos no coinciden.");
+                    PrintColorMessage("\n Acceso denegado. Sus datos no coinciden.", ConsoleColor.Red);
                     Console.Write("¿Desea intentar de nuevo? (S/N): ");
 
                     if (Console.ReadLine()?.Trim().ToUpper() != "S")
@@ -255,6 +260,13 @@ namespace TaskFlow.Utils
                     Console.WriteLine(); // Espacio para el próximo intento
                 }
             }
+        }
+
+        public static void PrintColorMessage(string message, ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine(message);
+            Console.ResetColor();
         }
 
     }

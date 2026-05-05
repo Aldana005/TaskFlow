@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using System.IO;
 using System.Text.Json;
+using TaskFlow.Models;
+using TaskFlow.Utils;
 
 namespace TaskFlow.Services
 {
@@ -86,7 +88,7 @@ namespace TaskFlow.Services
 
             //guardamos la lista actualizada en el Json
             SaveTasks();
-            Console.WriteLine($"\n[Éxito] Tarea '{title}' creada con el ID #{newId}.");
+            ConsoleHelper.PrintColorMessage("\n Tarea creada.", ConsoleColor.Green); 
         }
 
         // Listar tareas

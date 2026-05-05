@@ -24,7 +24,9 @@ public class Program
         bool exit = false;
 
         while (!exit)
-        {
+        { 
+            Console.Clear(); // Limpia la consola 
+
             Console.WriteLine("\n=== NOVA TECH: TASKFLOW ===");
             Console.WriteLine("1. Crear tarea");
             Console.WriteLine("2. Listar tareas");
@@ -68,6 +70,11 @@ public class Program
                     Console.WriteLine("\nSaliendo. ¡Hasta luego!");
                     exit = true;
                     break;
+            }
+            if (!exit)
+            {
+                Console.WriteLine("\nPresione cualquier tecla para volver al menú...");
+                Console.ReadKey();
             }
         }
     }
